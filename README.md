@@ -1,70 +1,58 @@
-# Apiosk Publisher
+# Apiosk Publish Skill
 
 Publish and manage paid APIs on `https://gateway.apiosk.com`.
 
-## Quick Start
+## Install
 
 ```bash
-# Register (signed request)
-./register-api.sh \
-  --name "My Weather API" \
-  --slug "my-weather-api" \
-  --endpoint "https://my-api.com/v1" \
-  --price 0.01 \
-  --description "Real-time weather data" \
-  --listing-group datasets
-
-# List your APIs (signed request)
-./my-apis.sh
-
-# Update (signed request)
-./update-api.sh --slug my-weather-api --price 0.02
-
-# Deactivate (signed request)
-./delete-api.sh --slug my-weather-api
+npx skills add obcraft/apiosk-publish-skill --skill apiosk-publish
 ```
 
-## Auth Requirements
+## Auth Model
 
-Gateway management routes require signed wallet auth headers:
+Management endpoints require signed wallet auth headers:
 
 - `x-wallet-address`
 - `x-wallet-signature`
 - `x-wallet-timestamp`
 - `x-wallet-nonce`
 
-Scripts generate these automatically using your key from:
+This skill does not read or store local signing key material.  
+You provide signatures via `--signature` (or `APIOSK_AUTH_SIGNATURE`).
 
-- `~/.apiosk/wallet.json` (preferred, created by `apiosk-skill/setup-wallet.sh`)
-- `APIOSK_PRIVATE_KEY` env var
-- `--private-key` flag
+If `--signature` is missing, scripts print the exact canonical message to sign.
 
-## Listing Groups (Current)
+## Quick Start
 
-For discovery and positioning, use these groups:
+```bash
+# Register
+./register-api.sh \
+  --name "My Weather API" \
+  --slug "my-weather-api" \
+  --endpoint "https://my-api.com/v1" \
+  --price 0.01 \
+  --description "Real-time weather data" \
+  --listing-group datasets \
+  --signature 0xYourSignature
+
+# List your APIs
+./my-apis.sh --signature 0xYourSignature
+
+# Update
+./update-api.sh --slug my-weather-api --price 0.02 --signature 0xYourSignature
+
+# Deactivate
+./delete-api.sh --slug my-weather-api --signature 0xYourSignature
+```
+
+## Listing Groups
 
 - `api`
 - `datasets`
 - `compute`
 
-`register-api.sh --listing-group` maps to `category`:
+`--listing-group` maps to `category`:
 
 - `api` -> `data`
 - `datasets` -> `dataset`
 - `compute` -> `compute`
-
-## Commands
-
-- `register-api.sh` register a new API
-- `my-apis.sh` list your APIs and earnings
-- `update-api.sh` update endpoint, price, description, active state
-- `delete-api.sh` deactivate an API
-- `test-api.sh` send a plain probe request via gateway (no payment proof)
-
-## Requirements
-
-- `curl`
-- `jq`
-- `cast` (Foundry, used for request signatures)
-
-Install Foundry: [https://book.getfoundry.sh/getting-started/installation](https://book.getfoundry.sh/getting-started/installation)

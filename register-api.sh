@@ -19,7 +19,9 @@ DESCRIPTION=""
 CATEGORY="data"
 LISTING_GROUP=""
 WALLET=""
-PRIVATE_KEY=""
+SIGNATURE=""
+TIMESTAMP=""
+NONCE=""
 
 print_help() {
   echo "Usage: $0 [OPTIONS]"
@@ -32,8 +34,10 @@ print_help() {
   echo "  --description TEXT         API description (required)"
   echo "  --category CATEGORY        Category (default: data)"
   echo "  --listing-group GROUP      api | datasets | compute (maps to category)"
-  echo "  --wallet ADDRESS           Wallet address (optional: defaults from ~/.apiosk)"
-  echo "  --private-key HEX          Wallet private key for signature (optional)"
+  echo "  --wallet ADDRESS           Wallet address (optional: defaults from ~/.apiosk/wallet.txt)"
+  echo "  --signature HEX            Wallet signature for canonical auth message (required)"
+  echo "  --timestamp UNIX           Optional auth timestamp override"
+  echo "  --nonce NONCE              Optional auth nonce override"
   echo "  --help                     Show this help"
 }
 
@@ -84,8 +88,16 @@ while [[ $# -gt 0 ]]; do
       WALLET="$2"
       shift 2
       ;;
-    --private-key)
-      PRIVATE_KEY="$2"
+    --signature)
+      SIGNATURE="$2"
+      shift 2
+      ;;
+    --timestamp)
+      TIMESTAMP="$2"
+      shift 2
+      ;;
+    --nonce)
+      NONCE="$2"
       shift 2
       ;;
     --help)
@@ -119,7 +131,7 @@ fi
 
 WALLET="$(load_wallet_address "$WALLET" || true)"
 if [[ -z "$WALLET" ]]; then
-  echo "Error: Wallet not found. Provide --wallet or create ~/.apiosk/wallet.json"
+  echo "Error: Wallet not found. Provide --wallet or create ~/.apiosk/wallet.txt"
   exit 1
 fi
 
@@ -128,17 +140,12 @@ if ! validate_wallet_format "$WALLET"; then
   exit 1
 fi
 
-PRIVATE_KEY="$(load_private_key "$PRIVATE_KEY" || true)"
-if [[ -z "$PRIVATE_KEY" ]]; then
-  echo "Error: Private key required for signed auth."
-  echo "Provide --private-key, APIOSK_PRIVATE_KEY, or ~/.apiosk/wallet.json with private_key."
-  exit 1
-fi
-
-require_signing_bin
-
 RESOURCE="register:${SLUG}"
-sign_wallet_auth "register_api" "$RESOURCE" "$WALLET" "$PRIVATE_KEY"
+prepare_wallet_auth "register_api" "$RESOURCE" "$WALLET" "$TIMESTAMP" "$NONCE"
+if [[ -z "$SIGNATURE" && -n "${APIOSK_AUTH_SIGNATURE:-}" ]]; then
+  SIGNATURE="${APIOSK_AUTH_SIGNATURE}"
+fi
+set_auth_signature "$SIGNATURE"
 
 # Build JSON payload
 PAYLOAD="$(jq -n \

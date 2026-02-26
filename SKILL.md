@@ -18,11 +18,10 @@ Use this skill for API publishing and lifecycle management on `https://gateway.a
 
 - `curl`
 - `jq`
-- `cast` (Foundry)
-- Wallet:
-  - `~/.apiosk/wallet.json` (preferred, includes `address` + `private_key`)
-  - or `APIOSK_PRIVATE_KEY` env var
-  - or `--private-key` flag
+- Wallet address from one of:
+  - `--wallet`
+  - `~/.apiosk/wallet.txt`
+  - `~/.apiosk/wallet.json` (`address` field only)
 
 ## Management endpoints
 
@@ -60,34 +59,9 @@ Action/resource mapping:
 
 ## Listing groups and categories
 
-Discovery groups in gateway:
-
-- `api`
-- `datasets`
-- `compute`
-
-Register payload currently uses `category` (not explicit `listing_type`).
-Use this mapping:
-
 - `api` -> `data`
 - `datasets` -> `dataset`
 - `compute` -> `compute`
-
-## Register payload
-
-`POST /v1/apis/register`:
-
-```json
-{
-  "name": "My API",
-  "slug": "my-api",
-  "endpoint_url": "https://example.com",
-  "price_usd": 0.01,
-  "description": "My paid API",
-  "owner_wallet": "0x...",
-  "category": "dataset"
-}
-```
 
 ## Agent behavior requirements
 
@@ -95,4 +69,4 @@ Use this mapping:
 - Keep wallet value lowercased inside the signed message, even if header uses checksum case.
 - If `Unauthorized`, regenerate timestamp + nonce and re-sign once.
 - Validate HTTPS endpoint before register/update.
-- Use listing-group mapping above so new listings appear in the right discovery surfaces.
+

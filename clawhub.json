@@ -1,7 +1,7 @@
 {
   "name": "apiosk-publish",
   "displayName": "Apiosk Publisher",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Publish and manage your own APIs on the Apiosk marketplace. Register your API endpoint, set pricing, and start earning from every request.",
   "category": "api",
   "tags": [
@@ -21,7 +21,7 @@
     "url": "https://github.com/apiosk/apiosk-publish-skill"
   },
   "requires": {
-    "bins": ["curl", "jq", "cast"]
+    "bins": ["curl", "jq"]
   },
   "scripts": {
     "register-api": "./register-api.sh",

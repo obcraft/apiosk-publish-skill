@@ -1,81 +1,35 @@
 # Security Policy
 
-## Overview
+## Scope
 
-**apiosk-publish** is a skill for publishing APIs on the Apiosk marketplace. It has been designed with security as a top priority.
+`apiosk-publish` manages API listings on the Apiosk gateway using signed wallet auth headers.
 
-## Security Level: Benign
+## Credential Handling
 
-This skill is rated **Benign** on the ClawHub security scale.
-
-### What This Means
-
-- ✅ No arbitrary code execution
-- ✅ No `curl | bash` patterns
-- ✅ All external requests go to verified Apiosk infrastructure
-- ✅ Private keys are never sent to third parties (used locally for signing only)
-- ✅ No write access outside `~/.apiosk/` directory
-- ✅ All dependencies declared (`curl`, `jq`, `cast`)
-
-## Network Access
-
-This skill communicates **only** with:
-- `https://gateway.apiosk.com` — Apiosk gateway API
-
-All communication uses HTTPS exclusively.
+- This skill does not read local signing key material.
+- This skill does not store local signing key material.
+- Signatures are provided explicitly via `--signature` or `APIOSK_AUTH_SIGNATURE`.
 
 ## Data Access
 
-- **Reads:** `~/.apiosk/wallet.json` (address + private key) or `~/.apiosk/wallet.txt` (address only)
-- **Writes:** None (skill stores no local data)
+- Reads wallet address from:
+  - `--wallet`
+  - `~/.apiosk/wallet.txt`
+  - `~/.apiosk/wallet.json` (`address` field only, backward compatibility)
+- Writes: none
 
-## Wallet Security
+## Network Access
 
-- Wallet address is read from `~/.apiosk/wallet.json` or `~/.apiosk/wallet.txt`
-- Private key may be read from `~/.apiosk/wallet.json`, `APIOSK_PRIVATE_KEY`, or `--private-key`
-- Private key is only used locally to produce ECDSA signatures for gateway auth headers
-- Private key is not transmitted directly to the gateway
-- You retain full control of your wallet
+Scripts call only:
 
-## Required Binaries
+- `https://gateway.apiosk.com`
 
-- `curl` — HTTP requests
-- `jq` — JSON parsing
-- `cast` — wallet message signing for auth headers
+## Command Safety
 
-These are standard Unix utilities and are **not** downloaded by this skill.
+- No pipe-to-shell install patterns.
+- No remote code download/execution.
+- No dynamic shell evaluation from remote input.
 
-## API Endpoint Validation
+## Reporting
 
-When you register an API:
-1. Gateway validates the endpoint URL is HTTPS
-2. Performs a health check (HEAD/GET request)
-3. Only approves if health check passes
-4. Your endpoint URL is stored in the Apiosk database
-
-**Important:** Ensure your API endpoint is secure and doesn't expose sensitive data.
-
-## No Arbitrary Code Execution
-
-- All scripts are simple shell scripts
-- No `eval`, `source`, or dynamic code execution
-- No external script downloads
-- No dependency installations
-
-## Reporting Security Issues
-
-If you discover a security issue:
-
-1. **DO NOT** open a public GitHub issue
-2. Email: security@apiosk.com
-3. We'll respond within 24 hours
-4. Coordinated disclosure after fix
-
-## Updates
-
-This skill may receive security updates. Check the latest version on ClawHub.
-
----
-
-**Last Updated:** 2026-02-26  
-**Version:** 1.1.0
+Report security issues to `security@apiosk.com`.
